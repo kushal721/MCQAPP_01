@@ -68,7 +68,7 @@ exports.updateCourse = async (req, res) => {
 
 exports.deleteCourse = async (req, res) => {
   try {
-    const courseId = req.params.id; // Extracting the course ID from the request parameters
+    const questionID = req.params.id; // Extracting the course ID from the request parameters
 
     //  Find the course by ID and remove it
     const deletedCourse = await Course.findByIdAndDelete(courseId);

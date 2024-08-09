@@ -27,9 +27,12 @@ connectDb(DATABASE_URL);
 //imports
 const courseRoutes = require("./routes/courseRoutes.js");
 const subjectRoutes = require("./routes/subjectRoutes.js");
+const questionRoutes = require("./routes/questionRoutes.js")
 
 app.use("/api/course", courseRoutes);
 app.use("/api/subject", subjectRoutes);
+app.use("/api/question", questionRoutes)
+
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
