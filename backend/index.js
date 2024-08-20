@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const dotenv = require("dotenv");
 
 // Load environment variables
@@ -9,6 +10,9 @@ const PORT = 4000;
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
+
+// Enable CORS for cross-origin requests
+app.use(cors());
 
 // Function to connect to the database
 const connectDb = async (DATABASE_URL) => {
@@ -27,12 +31,11 @@ connectDb(DATABASE_URL);
 //imports
 const courseRoutes = require("./routes/courseRoutes.js");
 const subjectRoutes = require("./routes/subjectRoutes.js");
-const questionRoutes = require("./routes/questionRoutes.js")
+const questionRoutes = require("./routes/questionRoutes.js");
 
 app.use("/api/course", courseRoutes);
 app.use("/api/subject", subjectRoutes);
-app.use("/api/question", questionRoutes)
-
+app.use("/api/question", questionRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

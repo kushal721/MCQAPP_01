@@ -168,3 +168,20 @@ exports.updateQuestions = async (req, res) => {
       .json({ message: "Server error. Could not update question." });
   }
 };
+
+exports.deleteQuestion = async (req, res) => {
+  const question_id = req.params.id;
+
+  try {
+    // Validate question_id
+    if (!mongoose.Types.ObjectId.isValid(question_id)) {
+      return res.status(400).json({ message: "Invalid question ID format." });
+    }
+
+    // Delete the question
+    const deletedQuestion = await Question.findByIdAndDelete(question_id);
+    res
+      .status(200)
+      .json({ message: "Question deleted successfully.", deletedQuestion });
+  } catch (error) {}
+};

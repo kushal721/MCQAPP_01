@@ -38,6 +38,9 @@ const Header = () => {
           >
             Categories
           </button>
+          <button className="text-lg font-medium text-white hover:underline">
+            Leaderboard
+          </button>
           <Link
             to="/about"
             className="text-lg font-medium text-white hover:underline"

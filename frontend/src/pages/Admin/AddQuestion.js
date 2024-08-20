@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+
 
 const AddQuestion = () => {
+  const [name, setName] = useState("");
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <main className="w-full max-w-4xl p-6 bg-white shadow-md rounded-md">

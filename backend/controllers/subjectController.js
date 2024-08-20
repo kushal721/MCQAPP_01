@@ -10,6 +10,13 @@ exports.addSubject = async (req, res) => {
         .status(400)
         .json({ message: "Name and courseId are required." });
     }
+    // Check if a subject with the same name already exists for the given courseId
+    const existingSubject = await Subject.findOne({ name, courseId });
+    if (existingSubject) {
+      return res
+        .status(400)
+        .json({ message: "Subject already exists for this course." });
+    }
 
     // Create a new subject
     const newSubject = new Subject({ name, courseId });
