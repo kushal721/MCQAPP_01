@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const AddSubject = () => {
@@ -44,13 +44,21 @@ const AddSubject = () => {
         "http://localhost:4000/api/subject/addSubject",
         newSubject
       );
-      setSuccess("Subject added successfully!");
+      if (response.status = 201){
+        alert("subject added successfully")
+      }
+      
+      
       setSubjectName(""); // Clear the subject name field
       setSelectedCourse(""); // Clear the selected course
       
     } catch (error) {
       console.error("Error adding subject:", error);
       console.log(
+        error.response?.data?.message ||
+          "Failed to add subject. Please try again."
+      );
+      alert(
         error.response?.data?.message ||
           "Failed to add subject. Please try again."
       );
