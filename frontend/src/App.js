@@ -19,9 +19,9 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          {/* <Route path="/coursesubcategory" element={<courseSubCategory />} /> */}
-          <Route path="/sub-categories" element={<CourseSubCategory />} />
-          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/sub-categories/:id" element={<CourseSubCategory />} />
+
+          <Route path="/quiz/:id" element={<QuizPage />} />
         </Routes>
 
         <Routes>

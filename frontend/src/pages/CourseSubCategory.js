@@ -1,13 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 const CourseSubCategory = () => {
-  const subjects = [
-    { name: "Physics" },
-    { name: "Chemistry" },
-    { name: "Mathematics" },
-    { name: "Computer Science" },
-  ];
+  const { id } = useParams();
+  const [subjects, setSubjects] = useState([]);
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/api/subject/getSubjectByCourse/${id}`
+        );
+        setSubjects(response.data.subjects);
+      } catch (error) {
+        console.log("Error fetching course", error);
+      }
+    };
+    fetchSubjects();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen py-12 md:py-16 lg:py-20">
@@ -22,7 +33,7 @@ const CourseSubCategory = () => {
           {subjects.map((subject, index) => (
             <Link
               key={index}
-              to="/quiz"
+              to={`/quiz/${subject._id}`}
               className="group relative overflow-hidden rounded-lg bg-black text-center text-white transition-all hover:bg-gray-800"
             >
               <div className="flex h-32 items-center justify-center p-4 sm:h-40 ">
