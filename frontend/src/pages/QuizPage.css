@@ -1,0 +1,19 @@
+.option {
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.option.correct {
+  background-color: #d4edda; /* Light green */
+}
+
+.option.incorrect {
+  background-color: #f8d7da; /* Light red */
+}
+
+input[type="radio"] {
+  margin-right: 8px;
+}

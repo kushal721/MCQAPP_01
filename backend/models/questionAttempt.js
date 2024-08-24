@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const questionAttemptSchema = new Schema({
-
   quizType: {
     type: String,
     required: true,
@@ -24,6 +23,10 @@ const questionAttemptSchema = new Schema({
   questionId: {
     type: Schema.Types.ObjectId,
     ref: "Question",
+  },
+  isCorrect: {
+    type: Boolean,
+    require: true,
   },
 });
 

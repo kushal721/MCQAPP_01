@@ -30,7 +30,7 @@ const QuizCategories = () => {
           {quizCategory.map((category, index) => (
             <Link
               key={index}
-              to={`/sub-categories/${category._id}`}
+              to={`/${category._id}/subjects`}
               // to={path}
               className="bg-black rounded-lg p-4 flex flex-col items-center gap-2 hover:bg-gray-800 hover:text-white transition-colors"
             >

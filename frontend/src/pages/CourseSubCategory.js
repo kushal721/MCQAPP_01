@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 const CourseSubCategory = () => {
-  const { id } = useParams();
+  const { course_id } = useParams();
   const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/subject/getSubjectByCourse/${id}`
+          `http://localhost:4000/api/subject/getSubjectByCourse/${course_id}`
         );
         setSubjects(response.data.subjects);
       } catch (error) {
@@ -33,7 +33,10 @@ const CourseSubCategory = () => {
           {subjects.map((subject, index) => (
             <Link
               key={index}
-              to={`/quiz/${subject._id}`}
+              to={{
+                pathname: `/${course_id}/subjects/${subject._id}`,
+                state: { subjectName: subject.name }, 
+              }}
               className="group relative overflow-hidden rounded-lg bg-black text-center text-white transition-all hover:bg-gray-800"
             >
               <div className="flex h-32 items-center justify-center p-4 sm:h-40 ">

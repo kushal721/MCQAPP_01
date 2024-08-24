@@ -19,9 +19,12 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/sub-categories/:id" element={<CourseSubCategory />} />
+          <Route path="/:course_id/subjects" element={<CourseSubCategory />} />
 
-          <Route path="/quiz/:id" element={<QuizPage />} />
+          <Route
+            path="/:course_id/subjects/:subject_id"
+            element={<QuizPage />}
+          />
         </Routes>
 
         <Routes>
