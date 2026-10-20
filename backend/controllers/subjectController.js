@@ -1,4 +1,7 @@
+const mongoose = require("mongoose");
 const Subject = require("../models/subject");
+const Question = require("../models/question");
+const QuestionAttempt = require("../models/questionAttempt");
 
 exports.addSubject = async (req, res) => {
   try {
@@ -11,20 +14,15 @@ exports.addSubject = async (req, res) => {
         .json({ message: "Name and courseId are required." });
     }
     // Check if a subject with the same name already exists for the given courseId
-    const existingSubject = await Subject.findOne({ name, courseId });
+    const existingSubject = await Subject.findOne({ name: name.trim(), courseId });
     if (existingSubject) {
       return res
-        .status(400)
+        .status(409)
         .json({ message: "Subject already exists for this course." });
     }
 
-    // Create a new subject
-    const newSubject = new Subject({ name, courseId });
+    const newSubject = await Subject.create({ name, courseId });
 
-    // Save the subject to the database
-    await newSubject.save();
-
-    // Send response
     res.status(201).json({
       message: "Subject added successfully",
       subject: newSubject,
@@ -35,20 +33,36 @@ exports.addSubject = async (req, res) => {
   }
 };
 
-//Function to gett all the subject by courseId
+//Function to get all the subjects of a course, with question counts
 exports.getAllSubjectsByCourseId = async (req, res) => {
   try {
-    const courseId = req.params.courseId;
+    const { courseId } = req.params;
 
-    // Validate input
-    if (!courseId) {
-      return res.status(400).json({ message: "courseId is required." });
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      return res.status(400).json({ message: "Invalid course ID." });
     }
 
-    // Find all subjects belonging to the given courseId
-    const subjects = await Subject.find({ courseId });
+    const subjects = await Subject.aggregate([
+      { $match: { courseId: new mongoose.Types.ObjectId(courseId) } },
+      { $sort: { createdAt: 1, _id: 1 } },
+      {
+        $lookup: {
+          from: "questions",
+          localField: "_id",
+          foreignField: "subject_id",
+          as: "questions",
+        },
+      },
+      {
+        $project: {
+          name: 1,
+          courseId: 1,
+          createdAt: 1,
+          questionCount: { $size: "$questions" },
+        },
+      },
+    ]);
 
-    // Send response
     res.json({ subjects });
   } catch (error) {
     console.error("Error getting subjects by courseId:", error);
@@ -56,60 +70,76 @@ exports.getAllSubjectsByCourseId = async (req, res) => {
   }
 };
 
-//Function to update subject
-exports.updateSubject = async (req, res) => {
+//Function to get a single subject (with its course)
+exports.getSubjectById = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid subject ID." });
+  }
+
   try {
-    const subjectId = req.params.id; // Extracting the course ID from the request parameters
-    const updatedData = req.body; // Getting the updated data from the request body
-
-    console.log("upade data0", updatedData);
-    console.log("subject ide", subjectId);
-
-    // Step 1: Check if there's any data provided for update
-    if (Object.keys(updatedData).length === 0) {
-      return res.status(400).json({ error: "No data provided for update." });
+    const subject = await Subject.findById(id).populate("courseId");
+    if (!subject) {
+      return res.status(404).json({ message: "Subject not found." });
     }
-
-    // Step 2: Find the course by ID and update it with the provided data
-    const updatedSubject = await Subject.findByIdAndUpdate(
-      subjectId,
-      updatedData,
-      {
-        new: true, // Return the updated course document
-        runValidators: true, // Apply validation rules from the schema
-      }
-    );
-
-    // Step 3: If no course is found with the given ID, return a 404 error
-    if (!updatedSubject) {
-      return res.status(404).json({ error: "Subject not found." });
-    }
-
-    // Step 4: Return a success message and the updated course data
-    res.status(200).json({
-      message: "Subject updated successfully!",
-      course: updatedSubject,
-    });
+    const questionCount = await Question.countDocuments({ subject_id: id });
+    res.json({ ...subject.toObject(), questionCount });
   } catch (error) {
-    // Step 5: Catch any errors and return a 500 status with the error message
-    res.status(500).json({ error: error.message });
+    console.error("Error getting subject:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-//Function to delete subject
+//Function to update subject
+exports.updateSubject = async (req, res) => {
+  try {
+    const subjectId = req.params.id;
+    const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "No data provided for update." });
+    }
+
+    const updatedSubject = await Subject.findByIdAndUpdate(
+      subjectId,
+      { name },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedSubject) {
+      return res.status(404).json({ message: "Subject not found." });
+    }
+
+    res.status(200).json({
+      message: "Subject updated successfully!",
+      subject: updatedSubject,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(409)
+        .json({ message: "Subject already exists for this course." });
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//Function to delete a subject along with its questions and attempts
 exports.deleteSubject = async (req, res) => {
   try {
     const subjectId = req.params.id;
 
-    if (!subjectId) {
-      return res.status(404).json({ message: "Subject Not found" });
+    const deletedSubject = await Subject.findByIdAndDelete(subjectId);
+    if (!deletedSubject) {
+      return res.status(404).json({ message: "Subject not found." });
     }
 
-    const deleteSubject = await Subject.findByIdAndDelete(subjectId);
+    await Question.deleteMany({ subject_id: subjectId });
+    await QuestionAttempt.deleteMany({ subjectId });
 
     res
       .status(200)
-      .json({ message: "Subject deleted successfully", deleteSubject });
+      .json({ message: "Subject deleted successfully", deletedSubject });
   } catch (error) {
     console.error("Error deleting subject:", error);
     res.status(500).json({ message: "Server error" });

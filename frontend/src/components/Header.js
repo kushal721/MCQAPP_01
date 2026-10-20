@@ -1,92 +1,59 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { Menu, X, LayoutDashboard } from "lucide-react";
+import Logo from "./Logo";
+
+const navClass = ({ isActive }) =>
+  `rounded-lg px-3 py-2 text-sm font-semibold transition ${
+    isActive ? "text-brand-700" : "text-slate-600 hover:text-slate-900"
+  }`;
 
 const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleScroll = (sectionId) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false); // Close the mobile menu after click
-    }
-  };
+  useEffect(() => setOpen(false), [location]);
 
   return (
-    <header className="bg-black py-6 px-4 md:px-6">
-      <div className="container mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-white">Quiz App</span>
-        </Link>
-        <nav className="hidden md:flex items-center gap-4">
-          <button
-            onClick={() => handleScroll("popular-quiz")}
-            className="text-lg font-medium text-white hover:underline"
-          >
-            Quizzes
-          </button>
-          <button
-            onClick={() => handleScroll("quiz-categories")}
-            className="text-lg font-medium text-white hover:underline"
-          >
-            Categories
-          </button>
-          <button className="text-lg font-medium text-white hover:underline">
-            Leaderboard
-          </button>
-          <Link
-            to="/about"
-            className="text-lg font-medium text-white hover:underline"
-          >
-            About
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-lg">
+      <div className="container-page flex h-16 items-center justify-between">
+        <Logo />
+
+        <nav className="hidden items-center gap-1 md:flex">
+          <NavLink to="/" end className={navClass}>
+            Home
+          </NavLink>
+          <Link to="/#courses" className={navClass({ isActive: false })}>
+            Courses
+          </Link>
+          <Link to="/admin" className="btn-secondary ml-3 py-2">
+            <LayoutDashboard className="h-4 w-4" /> Admin
           </Link>
         </nav>
-        <div className="md:hidden relative">
-          <button
-            onClick={toggleMobileMenu}
-            className="rounded-md px-3 py-2 text-sm font-medium text-white hover:bg-gray-700"
-          >
-            Menu
-          </button>
-          {isMobileMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-              <div className="py-1">
-                <button
-                  onClick={() => handleScroll("popular-quiz")}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 w-full text-left"
-                >
-                  Quizzes
-                </button>
-                <button
-                  onClick={() => handleScroll("quiz-categories")}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400 w-full text-left"
-                >
-                  Categories
-                </button>
-                <Link
-                  to="/leaderboard"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-400"
-                >
-                  Leaderboard
-                </Link>
-                <Link
-                  to="/about"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  About
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
+
+        <button
+          className="icon-btn md:hidden"
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Toggle menu"
+          aria-expanded={open}
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+
+      {open && (
+        <nav className="container-page flex flex-col gap-1 border-t border-slate-100 py-3 md:hidden">
+          <NavLink to="/" end className={navClass}>
+            Home
+          </NavLink>
+          <Link to="/#courses" className={navClass({ isActive: false })}>
+            Courses
+          </Link>
+          <Link to="/admin" className={navClass({ isActive: false })}>
+            Admin panel
+          </Link>
+        </nav>
+      )}
     </header>
   );
 };

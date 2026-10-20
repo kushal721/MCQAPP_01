@@ -1,33 +1,45 @@
 const mongoose = require("mongoose");
 const Question = require("../models/question");
+const Subject = require("../models/subject");
 const QuestionAttempt = require("../models/questionAttempt");
+
+const { isValid } = mongoose.Types.ObjectId;
+const toId = (id) => new mongoose.Types.ObjectId(id);
+
+// Returns an error message if the options array is malformed, otherwise null.
+const validateOptions = (options) => {
+  if (!Array.isArray(options) || options.length < 2) {
+    return "A question needs at least two options.";
+  }
+  const invalidOptions = options.some(
+    (option) =>
+      !option.option_text ||
+      !String(option.option_text).trim() ||
+      typeof option.is_correct !== "boolean"
+  );
+  if (invalidOptions) {
+    return "Each option must include 'option_text' and 'is_correct' fields.";
+  }
+  if (!options.some((option) => option.is_correct)) {
+    return "Mark at least one option as correct.";
+  }
+  return null;
+};
 
 exports.addQuestion = async (req, res) => {
   const { subject_id, question_text, options, explanation } = req.body;
 
   try {
-    // Basic validation for required fields
-    if (
-      !subject_id ||
-      !question_text ||
-      !Array.isArray(options) ||
-      options.length === 0
-    ) {
+    if (!subject_id || !question_text) {
       return res.status(400).json({
         message:
           "Please fill in all required fields: subject_id, question_text, and options.",
       });
     }
 
-    // Validate that each option has 'option_text' and 'is_correct' fields
-    const invalidOptions = options.some(
-      (option) => !option.option_text || typeof option.is_correct !== "boolean"
-    );
-    if (invalidOptions) {
-      return res.status(400).json({
-        message:
-          "Each option must include 'option_text' and 'is_correct' fields.",
-      });
+    const optionsError = validateOptions(options);
+    if (optionsError) {
+      return res.status(400).json({ message: optionsError });
     }
 
     const question = await Question.create({
@@ -38,125 +50,115 @@ exports.addQuestion = async (req, res) => {
     });
     res.status(201).json({ message: "Question added successfully", question });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
-// exports.getQuestionBySubject = async (req, res) => {
-//   const { subject_id } = req.params;
+exports.getQuestionById = async (req, res) => {
+  const { id } = req.params;
+  if (!isValid(id)) {
+    return res.status(400).json({ message: "Invalid question ID." });
+  }
 
-//   // Validate subject_id
-//   if (!mongoose.Types.ObjectId.isValid(subject_id)) {
-//     return res.status(400).json({ message: "Invalid subject ID." });
-//   }
+  try {
+    const question = await Question.findById(id);
+    if (!question) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+    res.status(200).json(question);
+  } catch (error) {
+    res.status(500).json({ message: "Server error. Could not fetch question." });
+  }
+};
 
-//   try {
-//     // Find questions by subject_id
-//     const questions = await Question.find({ subject_id });
-
-//     // Check if any questions were found
-//     if (questions.length === 0) {
-//       return res
-//         .status(404)
-//         .json({ message: "No questions found for this subject." });
-//     }
-
-//     // Return the found questions
-//     res.status(200).json(questions);
-//   } catch (error) {
-//     // Error handling
-//     console.error("Error fetching questions:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Server error. Could not fetch questions." });
-//   }
-// };
-
-exports.getQuestionBySubject = async (req, res) => {
+// All questions of a subject (used by the admin panel).
+exports.getQuestionsBySubject = async (req, res) => {
   const { subject_id } = req.params;
-
-  const quizType = "subjectwise";
-
-  // Validate subject_id
-  if (!mongoose.Types.ObjectId.isValid(subject_id)) {
+  if (!isValid(subject_id)) {
     return res.status(400).json({ message: "Invalid subject ID." });
   }
 
   try {
-    // Hardcoded userId for testing
-    const userId = new mongoose.Types.ObjectId("64c25a2fbd74f0e7358d341b");
+    const questions = await Question.find({ subject_id }).sort({
+      createdAt: -1,
+      _id: -1,
+    });
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    res.status(500).json({ message: "Server error. Could not fetch questions." });
+  }
+};
 
+// A random question from a subject that this user has not attempted yet.
+exports.getQuestionBySubject = async (req, res) => {
+  const { subject_id } = req.params;
+  const { userId } = req.query;
+
+  const quizType = "subjectwise";
+
+  if (!isValid(subject_id)) {
+    return res.status(400).json({ message: "Invalid subject ID." });
+  }
+  if (!isValid(userId)) {
+    return res.status(400).json({ message: "A valid userId is required." });
+  }
+
+  try {
     // Find questions already attempted by the user
     const attemptedQuestions = await QuestionAttempt.find({
-      userId: userId,
-      subjectId: new mongoose.Types.ObjectId(subject_id),
+      userId: toId(userId),
+      subjectId: toId(subject_id),
       quizType,
     }).distinct("questionId");
 
-    // Find a random question by subject_id that is not in the attempted questions
     const question = await Question.aggregate([
       {
         $match: {
-          subject_id: new mongoose.Types.ObjectId(subject_id),
+          subject_id: toId(subject_id),
           _id: { $nin: attemptedQuestions },
         },
       },
       { $sample: { size: 1 } },
+      // Answers are revealed only after the attempt is recorded.
+      { $project: { "options.is_correct": 0, explanation: 0 } },
     ]);
 
-    // Check if any question was found
     if (question.length === 0) {
       return res
         .status(404)
         .json({ message: "No new questions available for this subject." });
     }
 
-    // Return the found question
     res.status(200).json(question[0]);
   } catch (error) {
-    // Error handling
     console.error("Error fetching question:", error);
-    res
-      .status(500)
-      .json({ message: "Server error. Could not fetch question." });
+    res.status(500).json({ message: "Server error. Could not fetch question." });
   }
 };
 
-exports.updateQuestions = async (req, res) => {
+exports.updateQuestion = async (req, res) => {
   const question_id = req.params.id;
   const { subject_id, question_text, options, explanation } = req.body;
 
-  // Validate question_id
-  if (!mongoose.Types.ObjectId.isValid(question_id)) {
+  if (!isValid(question_id)) {
     return res.status(400).json({ message: "Invalid question ID format." });
   }
 
-  // Build the update object
   const updateData = {};
 
+  if (subject_id) updateData.subject_id = subject_id;
   if (question_text) updateData.question_text = question_text;
   if (options) {
-    // Validate options structure
-    if (!Array.isArray(options)) {
-      return res.status(400).json({ message: "Options should be an array." });
+    const optionsError = validateOptions(options);
+    if (optionsError) {
+      return res.status(400).json({ message: optionsError });
     }
-
-    // Validate each option
-    const invalidOptions = options.some(
-      (option) => !option.option_text || typeof option.is_correct !== "boolean"
-    );
-    if (invalidOptions) {
-      return res.status(400).json({
-        message:
-          "Each option must include 'option_text' and 'is_correct' fields.",
-      });
-    }
-
     updateData.options = options;
   }
-  if (explanation) updateData.explanation = explanation;
+  // An empty string clears the explanation.
+  if (explanation !== undefined) updateData.explanation = explanation;
 
-  // Check if there is anything to update
   if (Object.keys(updateData).length === 0) {
     return res
       .status(400)
@@ -164,7 +166,6 @@ exports.updateQuestions = async (req, res) => {
   }
 
   try {
-    // Find the question and update it
     const updatedQuestion = await Question.findByIdAndUpdate(
       question_id,
       { $set: updateData },
@@ -180,59 +181,87 @@ exports.updateQuestions = async (req, res) => {
       .json({ message: "Question updated successfully", updatedQuestion });
   } catch (error) {
     console.error("Error updating question:", error);
-    res
-      .status(500)
-      .json({ message: "Server error. Could not update question." });
+    res.status(500).json({ message: "Server error. Could not update question." });
   }
 };
 
 exports.deleteQuestion = async (req, res) => {
   const question_id = req.params.id;
 
-  try {
-    // Validate question_id
-    if (!mongoose.Types.ObjectId.isValid(question_id)) {
-      return res.status(400).json({ message: "Invalid question ID format." });
-    }
+  if (!isValid(question_id)) {
+    return res.status(400).json({ message: "Invalid question ID format." });
+  }
 
-    // Delete the question
+  try {
     const deletedQuestion = await Question.findByIdAndDelete(question_id);
+    if (!deletedQuestion) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+    await QuestionAttempt.deleteMany({ questionId: question_id });
+
     res
       .status(200)
       .json({ message: "Question deleted successfully.", deletedQuestion });
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    res.status(500).json({ message: "Server error. Could not delete question." });
+  }
 };
 
 exports.recordQuestionAttempt = async (req, res) => {
-  const { quizType, userId, courseId, subjectId, questionId, isCorrect } =
-    req.body;
+  const {
+    quizType = "subjectwise",
+    userId,
+    courseId,
+    subjectId,
+    questionId,
+    selectedOptionId,
+  } = req.body;
 
-  // Validate IDs
   if (
-    // !mongoose.Types.ObjectId.isValid(userId) ||
-    !mongoose.Types.ObjectId.isValid(courseId) ||
-    !mongoose.Types.ObjectId.isValid(subjectId) ||
-    !mongoose.Types.ObjectId.isValid(questionId)
+    !isValid(userId) ||
+    !isValid(courseId) ||
+    !isValid(subjectId) ||
+    !isValid(questionId)
   ) {
     return res.status(400).json({ message: "Invalid input data." });
   }
 
   try {
+    const question = await Question.findById(questionId);
+    if (!question) {
+      return res.status(404).json({ message: "Question not found." });
+    }
+
+    // Correctness is decided on the server from the chosen option.
+    const selected = question.options.id(selectedOptionId);
+    if (!selected) {
+      return res.status(400).json({ message: "Invalid option selected." });
+    }
+    const isCorrect = selected.is_correct;
+    const reveal = {
+      isCorrect,
+      correctOptionIds: question.options
+        .filter((option) => option.is_correct)
+        .map((option) => option._id),
+      explanation: question.explanation || "",
+    };
+
     // Check if the attempt already exists to avoid duplicate entries
     const existingAttempt = await QuestionAttempt.findOne({
       quizType,
-      // userId,
-      courseId,
+      userId,
       subjectId,
       questionId,
     });
 
     if (existingAttempt) {
-      return res.status(409).json({ message: "Question already attempted." });
+      return res
+        .status(409)
+        .json({ message: "Question already attempted.", ...reveal });
     }
 
-    // Create a new question attempt
-    const newAttempt = new QuestionAttempt({
+    await QuestionAttempt.create({
       quizType,
       userId,
       courseId,
@@ -241,16 +270,74 @@ exports.recordQuestionAttempt = async (req, res) => {
       isCorrect,
     });
 
-    // Save the attempt to the database
-    await newAttempt.save();
-
     res
       .status(201)
-      .json({ message: "Question attempt recorded successfully." });
+      .json({ message: "Question attempt recorded successfully.", ...reveal });
   } catch (error) {
     console.error("Error recording question attempt:", error);
     res
       .status(500)
       .json({ message: "Server error. Could not record question attempt." });
+  }
+};
+
+// Per-subject progress of a user inside a course: { [subjectId]: { attempted, correct } }
+exports.getCourseProgress = async (req, res) => {
+  const { courseId } = req.params;
+  const { userId } = req.query;
+
+  if (!isValid(courseId) || !isValid(userId)) {
+    return res.status(400).json({ message: "Invalid input data." });
+  }
+
+  try {
+    const subjectIds = await Subject.find({ courseId }).distinct("_id");
+    const rows = await QuestionAttempt.aggregate([
+      {
+        $match: {
+          userId: toId(userId),
+          subjectId: { $in: subjectIds },
+          quizType: "subjectwise",
+        },
+      },
+      {
+        $group: {
+          _id: "$subjectId",
+          attempted: { $sum: 1 },
+          correct: { $sum: { $cond: ["$isCorrect", 1, 0] } },
+        },
+      },
+    ]);
+
+    const progress = {};
+    rows.forEach((row) => {
+      progress[row._id] = { attempted: row.attempted, correct: row.correct };
+    });
+    res.status(200).json(progress);
+  } catch (error) {
+    console.error("Error fetching progress:", error);
+    res.status(500).json({ message: "Server error. Could not fetch progress." });
+  }
+};
+
+// Clears a user's attempts for a subject so they can practise it again.
+exports.resetSubjectProgress = async (req, res) => {
+  const { subject_id } = req.params;
+  const { userId } = req.query;
+
+  if (!isValid(subject_id) || !isValid(userId)) {
+    return res.status(400).json({ message: "Invalid input data." });
+  }
+
+  try {
+    const { deletedCount } = await QuestionAttempt.deleteMany({
+      userId,
+      subjectId: subject_id,
+      quizType: "subjectwise",
+    });
+    res.status(200).json({ message: "Progress reset.", deletedCount });
+  } catch (error) {
+    console.error("Error resetting progress:", error);
+    res.status(500).json({ message: "Server error. Could not reset progress." });
   }
 };

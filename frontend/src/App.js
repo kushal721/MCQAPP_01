@@ -1,44 +1,44 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./components/ui/Toast";
+import PublicLayout from "./components/PublicLayout";
 import Home from "./pages/Home";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import CourseSubCategory from "./pages/CourseSubCategory";
+import CoursePage from "./pages/CoursePage";
 import QuizPage from "./pages/QuizPage";
-import AdminHome from "./pages/Admin/AdminHome";
-import AddCourse from "./pages/Admin/AddCourse";
-import AddSubject from "./pages/Admin/AddSubject";
-import AddQuestion from "./pages/Admin/AddQuestion";
-import ViewAllQuestions from "./pages/Admin/ViewAllQuestions";
-import ViewCourses from "./pages/Admin/ViewCourses";
-import ViewSubject from "./pages/Admin/ViewSubject";
+import NotFound from "./pages/NotFound";
+import AdminLayout from "./pages/Admin/AdminLayout";
+import Dashboard from "./pages/Admin/Dashboard";
+import ManageCourses from "./pages/Admin/ManageCourses";
+import ManageSubjects from "./pages/Admin/ManageSubjects";
+import ManageQuestions from "./pages/Admin/ManageQuestions";
+import QuestionForm from "./pages/Admin/QuestionForm";
 
 function App() {
   return (
-    <>
+    <ToastProvider>
       <Router>
-        <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/:course_id/subjects" element={<CourseSubCategory />} />
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/courses/:courseId" element={<CoursePage />} />
+            <Route
+              path="/courses/:courseId/subjects/:subjectId"
+              element={<QuizPage />}
+            />
+            <Route path="*" element={<NotFound />} />
+          </Route>
 
-          <Route
-            path="/:course_id/subjects/:subject_id"
-            element={<QuizPage />}
-          />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="courses" element={<ManageCourses />} />
+            <Route path="courses/:courseId" element={<ManageSubjects />} />
+            <Route path="subjects/:subjectId" element={<ManageQuestions />} />
+            <Route path="questions/new" element={<QuestionForm />} />
+            <Route path="questions/:questionId/edit" element={<QuestionForm />} />
+            <Route path="*" element={<NotFound admin />} />
+          </Route>
         </Routes>
-
-        <Routes>
-          <Route path="/admin/home" element={<AdminHome />} />
-          <Route path="/addCourse" element={<AddCourse />} />
-          <Route path="/addSubject" element={<AddSubject />} />
-          <Route path="/addQuestion" element={<AddQuestion />} />
-          <Route path="/viewAllQuestion" element={<ViewAllQuestions />} />
-          <Route path="/viewCourse" element={<ViewCourses />} />
-          <Route path="/viewSubject" element={<ViewSubject />} />
-        </Routes>
-        <Footer />
       </Router>
-    </>
+    </ToastProvider>
   );
 }
 
