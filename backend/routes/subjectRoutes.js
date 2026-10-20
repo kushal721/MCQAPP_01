@@ -8,10 +8,11 @@ const {
   updateSubject,
   deleteSubject,
 } = require("../controllers/subjectController");
+const { requireAdmin } = require("../middleware/auth");
 
-router.post("/addSubject", addSubject);
+router.post("/addSubject", requireAdmin, addSubject);
 router.get("/getSubjectByCourse/:courseId", getAllSubjectsByCourseId);
 router.get("/getSubject/:id", getSubjectById);
-router.put("/updateSubject/:id", updateSubject);
-router.delete("/deleteSubject/:id", deleteSubject);
+router.put("/updateSubject/:id", requireAdmin, updateSubject);
+router.delete("/deleteSubject/:id", requireAdmin, deleteSubject);
 module.exports = router;

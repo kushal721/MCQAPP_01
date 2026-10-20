@@ -2,9 +2,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const crypto = require("crypto");
 
 // Load environment variables
 dotenv.config();
+
+// Admin login tokens are signed with JWT_SECRET. In development a random
+// secret is used when none is set (sessions then end on every restart).
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === "production") {
+    console.error("JWT_SECRET must be set in production.");
+    process.exit(1);
+  }
+  console.warn("JWT_SECRET is not set; using a temporary secret for this run.");
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
+}
 const app = express();
 const PORT = process.env.PORT || 4000;
 const DATABASE_URL =
@@ -21,6 +33,7 @@ const courseRoutes = require("./routes/courseRoutes.js");
 const subjectRoutes = require("./routes/subjectRoutes.js");
 const questionRoutes = require("./routes/questionRoutes.js");
 const statsRoutes = require("./routes/statsRoutes.js");
+const authRoutes = require("./routes/authRoutes.js");
 const Subject = require("./models/subject");
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
@@ -35,6 +48,7 @@ if (process.env.NODE_ENV !== "production") {
     res.status(204).end();
   });
 }
+app.use("/api/auth", authRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/subject", subjectRoutes);
 app.use("/api/question", questionRoutes);

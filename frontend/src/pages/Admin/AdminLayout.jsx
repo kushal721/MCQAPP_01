@@ -1,7 +1,15 @@
 import React, { useEffect } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { ExternalLink, LayoutDashboard, Library, PlusCircle } from "lucide-react";
+import {
+  ExternalLink,
+  LayoutDashboard,
+  Library,
+  LogOut,
+  PlusCircle,
+} from "lucide-react";
 import Logo from "../../components/Logo";
+import { useAuth } from "../../lib/auth";
+import { initials } from "../../lib/palette";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -18,6 +26,7 @@ const linkClass = ({ isActive }) =>
 
 const AdminLayout = () => {
   const { pathname } = useLocation();
+  const { admin, logout } = useAuth();
   // Block body on purpose: newer browsers return a Promise from scrollTo, and
   // React would treat a returned value as the effect's cleanup function.
   useEffect(() => {
@@ -38,18 +47,37 @@ const AdminLayout = () => {
             </NavLink>
           ))}
         </nav>
-        <Link to="/" className="btn-secondary mt-auto">
-          <ExternalLink className="h-4 w-4" /> View site
-        </Link>
+        <div className="mt-auto space-y-3">
+          <Link to="/" className="btn-secondary w-full">
+            <ExternalLink className="h-4 w-4" /> View site
+          </Link>
+          <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+              {initials(admin?.name)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-slate-900">{admin?.name}</p>
+              <p className="truncate text-xs text-slate-500">{admin?.email}</p>
+            </div>
+            <button onClick={logout} className="icon-btn" title="Sign out" aria-label="Sign out">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Top bar (mobile) */}
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur lg:hidden">
         <div className="flex h-14 items-center justify-between px-4">
           <Logo to="/admin" suffix="Admin" />
-          <Link to="/" className="icon-btn" aria-label="View site">
-            <ExternalLink className="h-4 w-4" />
-          </Link>
+          <div className="flex items-center">
+            <Link to="/" className="icon-btn" aria-label="View site">
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+            <button onClick={logout} className="icon-btn" aria-label="Sign out">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-2">
           {links.map(({ to, label, icon: Icon, end }) => (

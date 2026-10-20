@@ -8,6 +8,27 @@ const client = axios.create({
     `${window.location.protocol}//${window.location.hostname}:4000/api`,
 });
 
+// Admin token handling. The token is attached to every request once set;
+// if the server rejects it (expired / revoked), onUnauthorized is called.
+let onUnauthorized = () => {};
+
+export const setAuthToken = (token) => {
+  if (token) client.defaults.headers.common.Authorization = `Bearer ${token}`;
+  else delete client.defaults.headers.common.Authorization;
+};
+
+export const setUnauthorizedHandler = (handler) => {
+  onUnauthorized = handler;
+};
+
+client.interceptors.response.use(undefined, (error) => {
+  const sentToken = Boolean(error?.config?.headers?.Authorization);
+  if (error?.response?.status === 401 && sentToken) {
+    onUnauthorized(error.response.data?.message);
+  }
+  return Promise.reject(error);
+});
+
 // Pulls a human-readable message out of an axios error.
 export const errorMessage = (error, fallback = "Something went wrong.") =>
   error?.response?.data?.message ||
@@ -33,6 +54,9 @@ export const reportClientError = (error, componentStack) => {
 const data = (promise) => promise.then((res) => res.data);
 
 export const api = {
+  login: (body) => data(client.post("/auth/login", body)),
+  me: () => data(client.get("/auth/me")).then((res) => res.admin),
+
   stats: () => data(client.get("/stats")),
 
   getCourses: () => data(client.get("/course/getAllCourse")),
