@@ -9,7 +9,6 @@ const useFetch = (loader, deps = []) => {
   const [error, setError] = useState("");
   const latest = useRef(0);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const load = useCallback(loader, deps);
 
   const reload = useCallback(async () => {

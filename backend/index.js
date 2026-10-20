@@ -24,6 +24,17 @@ const statsRoutes = require("./routes/statsRoutes.js");
 const Subject = require("./models/subject");
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// Development only: the frontend reports UI crashes here so they show up in this log.
+if (process.env.NODE_ENV !== "production") {
+  app.post("/api/client-error", (req, res) => {
+    const { message, stack, componentStack, url, userAgent } = req.body || {};
+    console.error(
+      `\n[client-error] ${url}\n  ${userAgent}\n  ${message}\n${stack}\n${componentStack}\n`
+    );
+    res.status(204).end();
+  });
+}
 app.use("/api/course", courseRoutes);
 app.use("/api/subject", subjectRoutes);
 app.use("/api/question", questionRoutes);

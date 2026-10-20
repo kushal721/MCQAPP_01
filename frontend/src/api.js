@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// Defaults to port 4000 on whatever host served the page, so the app also
+// works when opened from another device via the machine's network address.
 const client = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:4000/api",
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    `${window.location.protocol}//${window.location.hostname}:4000/api`,
 });
 
 // Pulls a human-readable message out of an axios error.
@@ -11,6 +15,20 @@ export const errorMessage = (error, fallback = "Something went wrong.") =>
   (error?.request && !error?.response
     ? "Can't reach the server. Is the backend running?"
     : fallback);
+
+// In development, sends UI crashes to the backend log for debugging.
+export const reportClientError = (error, componentStack) => {
+  if (!import.meta.env.DEV) return;
+  client
+    .post("/client-error", {
+      message: String(error?.message || error),
+      stack: error?.stack,
+      componentStack,
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+    })
+    .catch(() => {});
+};
 
 const data = (promise) => promise.then((res) => res.data);
 

@@ -2,7 +2,7 @@
 
 A full-stack multiple-choice question (MCQ) practice app for entrance and competitive exams such as IOE, IOM, KU and Loksewa. Students pick a course and a subject, then answer random questions they haven't seen before, with instant feedback and an explanation for each answer. Admins manage the question bank from a built-in dashboard.
 
-**Stack:** React 18 · React Router 6 · Tailwind CSS 3 · Node.js · Express 4 · MongoDB (Mongoose 8)
+**Stack:** React 18 + Vite 5 · React Router 6 · Tailwind CSS 3 · Node.js · Express 4 · MongoDB (Mongoose 8)
 
 ---
 
@@ -41,7 +41,10 @@ MCQAPP_01/
 │   ├── seed.js           # sample data loader
 │   └── index.js          # app entry point
 └── frontend/
+    ├── index.html        # Vite entry HTML
+    ├── vite.config.js
     └── src/
+        ├── main.jsx      # React entry point
         ├── api.js        # all HTTP calls in one place
         ├── components/   # layout + reusable UI (modal, toast, progress bar…)
         ├── lib/          # hooks and helpers
@@ -89,19 +92,20 @@ In a second terminal:
 cd frontend
 npm install
 cp .env.example .env      # optional, only needed if the API isn't on localhost:4000
-npm start                 # opens http://localhost:3000
+npm run dev               # Vite dev server on http://localhost:5173
 ```
 
 | Variable            | Default                      | Description               |
 | ------------------- | ---------------------------- | ------------------------- |
-| `REACT_APP_API_URL` | `http://localhost:4000/api`  | Base URL of the backend   |
+| `VITE_API_URL`      | `http://localhost:4000/api`  | Base URL of the backend   |
 
-Open **http://localhost:3000** to practise, or **http://localhost:3000/admin** to manage content.
+Open **http://localhost:5173** to practise, or **http://localhost:5173/admin** to manage content.
 
 ### Production build
 
 ```bash
-cd frontend && npm run build     # static files in frontend/build
+cd frontend && npm run build     # static files in frontend/dist
+cd frontend && npm run preview   # serve the built files locally
 cd backend && npm start          # runs the API with node
 ```
 

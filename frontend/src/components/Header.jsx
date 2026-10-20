@@ -12,7 +12,9 @@ const Header = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  useEffect(() => setOpen(false), [location]);
+  useEffect(() => {
+    setOpen(false);
+  }, [location]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-lg">
