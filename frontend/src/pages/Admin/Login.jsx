@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, Eye, EyeOff, Lock, Mail, Shield } from "../../components/icons";
 import { errorMessage } from "../../api";
 import { useAuth } from "../../lib/auth";
 import Logo from "../../components/Logo";
@@ -35,31 +35,30 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-paper">
       {/* Brand panel */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-slate-950 lg:block">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-brand-600/30 blur-3xl" />
-          <div className="absolute -bottom-32 right-0 h-[28rem] w-[28rem] rounded-full bg-violet-600/25 blur-3xl" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
-        </div>
-        <div className="relative flex h-full flex-col justify-between p-12">
-          <div className="flex items-center gap-2.5 text-white">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            <span className="text-lg font-extrabold tracking-tight">MCQPrep Admin</span>
-          </div>
+      <div className="hidden w-[44%] border-r border-line bg-paper-sunk lg:block">
+        <div className="flex h-full flex-col justify-between p-12">
+          <Logo suffix="Admin" />
           <div>
-            <h2 className="max-w-md text-4xl font-extrabold tracking-tight text-white">
-              Manage your question bank
+            <h2 className="max-w-md text-5xl font-extrabold leading-[1.05] tracking-tight text-ink">
+              Manage the question bank.
             </h2>
-            <p className="mt-4 max-w-md text-slate-300">
-              Create courses and subjects, write questions with explanations, and
-              keep your students practising.
-            </p>
+            <ul className="mt-8 max-w-md divide-y divide-line-strong border-y border-line-strong text-ink-700">
+              {[
+                "Create courses and split them into subjects",
+                "Write questions with two to six options",
+                "Add the explanation students see after answering",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 py-3 text-sm">
+                  <Check className="h-4 w-4 shrink-0 text-marigold-700" /> {item}
+                </li>
+              ))}
+            </ul>
           </div>
-          <p className="text-sm text-slate-500">Authorised staff only.</p>
+          <p className="flex items-center gap-2 text-sm text-ink-500">
+            <Shield className="h-4 w-4" /> Authorised staff only.
+          </p>
         </div>
       </div>
 
@@ -71,7 +70,7 @@ const Login = () => {
           </div>
           <Link
             to="/"
-            className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900"
+            className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-ink-500 hover:text-ink"
           >
             <ArrowLeft className="h-4 w-4" /> Back to site
           </Link>
@@ -79,8 +78,8 @@ const Login = () => {
 
         <div className="flex flex-1 items-center justify-center py-12">
           <div className="w-full max-w-sm animate-fade-up">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Sign in</h1>
-            <p className="mt-2 text-sm text-slate-500">
+            <h1 className="text-4xl font-extrabold tracking-tight text-ink">Sign in</h1>
+            <p className="mt-2 text-sm text-ink-500">
               Use your admin account to access the dashboard.
             </p>
 
@@ -88,7 +87,7 @@ const Login = () => {
               <div>
                 <label htmlFor="email" className="label">Email</label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
                   <input
                     id="email"
                     type="email"
@@ -106,7 +105,7 @@ const Login = () => {
               <div>
                 <label htmlFor="password" className="label">Password</label>
                 <div className="relative">
-                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -120,7 +119,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700"
+                    className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 hover:text-ink"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -131,7 +130,7 @@ const Login = () => {
               {error && (
                 <p
                   role="alert"
-                  className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700"
+                  className="rounded-xl border border-wrong-200 bg-wrong-50 px-4 py-3 text-sm font-medium text-wrong-700"
                 >
                   {error}
                 </p>
@@ -147,9 +146,9 @@ const Login = () => {
               </button>
             </form>
 
-            <p className="mt-8 text-center text-xs text-slate-400">
+            <p className="mt-8 text-center text-xs text-ink-400">
               No account? Ask an existing admin, or create one with{" "}
-              <code className="whitespace-nowrap rounded bg-slate-100 px-1.5 py-0.5 text-slate-600">
+              <code className="whitespace-nowrap rounded bg-paper-sunk px-1.5 py-0.5 text-ink-700">
                 npm run create-admin
               </code>
             </p>

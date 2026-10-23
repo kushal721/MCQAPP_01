@@ -28,7 +28,7 @@ const ConfirmDialog = ({
       </>
     }
   >
-    <p className="text-sm leading-relaxed text-slate-600">{message}</p>
+    <p className="text-sm leading-relaxed text-ink-700">{message}</p>
   </Modal>
 );
 

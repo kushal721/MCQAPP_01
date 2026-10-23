@@ -17,7 +17,7 @@ const data = [
   {
     name: "IOE",
     courseDescription:
-      "Institute of Engineering entrance preparation — physics, chemistry and mathematics.",
+      "Institute of Engineering entrance preparation: physics, chemistry and mathematics.",
     subjects: {
       Physics: [
         ["What is the SI unit of force?", ["Joule", "Newton", "Watt", "Pascal"], 1, "1 newton is the force that accelerates 1 kg at 1 m/s²."],
@@ -40,12 +40,12 @@ const data = [
   {
     name: "IOM",
     courseDescription:
-      "Institute of Medicine entrance preparation — biology, chemistry and physics.",
+      "Institute of Medicine entrance preparation: biology, chemistry and physics.",
     subjects: {
       Biology: [
         ["The powerhouse of the cell is the:", ["Nucleus", "Ribosome", "Mitochondrion", "Golgi body"], 2, "Mitochondria produce most of the cell's ATP."],
         ["Which blood cells help in clotting?", ["RBCs", "WBCs", "Platelets", "Plasma cells"], 2, "Platelets (thrombocytes) form clots at injury sites."],
-        ["DNA replication is:", ["Conservative", "Semi-conservative", "Dispersive", "Non-conservative"], 1, "Each new DNA molecule keeps one original strand (Meselson–Stahl experiment)."],
+        ["DNA replication is:", ["Conservative", "Semi-conservative", "Dispersive", "Non-conservative"], 1, "Each new DNA molecule keeps one original strand (the Meselson and Stahl experiment)."],
       ],
       Chemistry: [
         ["Which of these is a noble gas?", ["Nitrogen", "Argon", "Oxygen", "Hydrogen"], 1, "Argon is in group 18."],
@@ -56,7 +56,7 @@ const data = [
   {
     name: "Loksewa",
     courseDescription:
-      "Public Service Commission preparation — general knowledge and current affairs.",
+      "Public Service Commission preparation: general knowledge and current affairs.",
     subjects: {
       "General Knowledge": [
         ["What is the highest peak in the world?", ["K2", "Kangchenjunga", "Mount Everest", "Lhotse"], 2, "Mount Everest stands at 8,848.86 m."],

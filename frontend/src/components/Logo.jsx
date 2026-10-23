@@ -1,18 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+
+// The mark is a filled answer bubble, as on an OMR exam sheet.
+export const LogoMark = ({ className = "h-8 w-8" }) => (
+  <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+    <rect width="32" height="32" rx="8" className="fill-ink" />
+    <circle cx="16" cy="16" r="7" className="fill-marigold-300" />
+  </svg>
+);
 
 const Logo = ({ to = "/", suffix }) => (
   <Link to={to} className="flex items-center gap-2.5">
-    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-white shadow-md shadow-brand-600/25">
-      <GraduationCap className="h-5 w-5" />
+    <LogoMark />
+    <span className="font-display text-lg font-bold tracking-tight text-ink">
+      MCQ Prep
     </span>
-    <span className="text-lg font-extrabold tracking-tight text-slate-900">
-      MCQ<span className="text-brand-600">Prep</span>
-    </span>
-    {suffix && (
-      <span className="badge bg-slate-100 text-slate-600">{suffix}</span>
-    )}
+    {suffix && <span className="badge bg-paper-sunk text-ink-500">{suffix}</span>}
   </Link>
 );
 

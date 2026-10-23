@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  ArrowRight,
+  Bulb,
   Check,
+  Close,
   Flame,
-  Lightbulb,
-  RotateCcw,
+  Refresh,
   Trophy,
-  X,
-} from "lucide-react";
+} from "../components/icons";
 import { api, errorMessage } from "../api";
 import { getClientId } from "../lib/clientId";
 import Spinner, { PageLoader } from "../components/ui/Spinner";
@@ -23,24 +22,25 @@ const LETTERS = "ABCDEFGH";
 const optionStyle = (phase, option, selectedId, result) => {
   if (phase !== "answered") {
     return selectedId === option._id
-      ? "border-brand-500 bg-brand-50"
-      : "border-slate-200 bg-white hover:border-brand-300 hover:bg-brand-50/40";
+      ? "border-marigold-500 bg-marigold-100"
+      : "border-line bg-paper-card hover:border-ink-300 hover:bg-paper";
   }
   const isCorrect = result.correctOptionIds.includes(option._id);
-  if (isCorrect) return "border-emerald-500 bg-emerald-50";
-  if (selectedId === option._id) return "border-rose-500 bg-rose-50";
-  return "border-slate-200 bg-white opacity-60";
+  if (isCorrect) return "border-right-500 bg-right-50";
+  if (selectedId === option._id) return "border-wrong-500 bg-wrong-50";
+  return "border-line bg-paper-card opacity-60";
 };
 
-const letterStyle = (phase, option, selectedId, result) => {
+// The letter sits in a round answer bubble, like an OMR sheet.
+const bubbleStyle = (phase, option, selectedId, result) => {
   if (phase === "answered") {
     if (result.correctOptionIds.includes(option._id))
-      return "bg-emerald-500 text-white";
-    if (selectedId === option._id) return "bg-rose-500 text-white";
-  } else if (selectedId === option._id) {
-    return "bg-brand-600 text-white";
+      return "border-right-500 bg-right-500 text-white";
+    if (selectedId === option._id) return "border-wrong-500 bg-wrong-500 text-white";
+    return "border-line-strong text-ink-400";
   }
-  return "bg-slate-100 text-slate-600 group-hover:bg-brand-100 group-hover:text-brand-700";
+  if (selectedId === option._id) return "border-marigold-500 bg-marigold-500 text-ink";
+  return "border-ink-300 text-ink-700 group-hover:border-ink";
 };
 
 const QuizPage = () => {
@@ -125,7 +125,8 @@ const QuizPage = () => {
     [phase, userId, courseId, subjectId, question, toast]
   );
 
-  // Keyboard shortcuts: 1–9 / A–H to answer, Enter or → for the next question.
+  // Keyboard shortcuts: 1 to 9 or A to H to answer, Enter or the right arrow
+  // key for the next question.
   useEffect(() => {
     const onKey = (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey || confirmReset) return;
@@ -151,7 +152,7 @@ const QuizPage = () => {
     try {
       await api.resetProgress(subjectId, userId);
       setConfirmReset(false);
-      toast("Progress reset — let's go again!");
+      toast("Progress reset. Every question is available again.");
       await init();
     } catch (error) {
       toast(errorMessage(error), "error");
@@ -173,14 +174,16 @@ const QuizPage = () => {
     ? Math.round((session.correct / session.answered) * 100)
     : 0;
 
+  const kbd = (k) => <kbd className="kbd">{k}</kbd>;
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-white to-slate-50 pb-20">
+    <div className="min-h-[calc(100vh-4rem)] pb-20">
       <div className="container-page max-w-3xl pt-8">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-4">
           <Link
             to={`/courses/${courseId}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-900"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-500 hover:text-ink"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{subject.courseId?.name || "Back"}</span>
@@ -188,11 +191,11 @@ const QuizPage = () => {
           </Link>
           <div className="flex items-center gap-2">
             {session.streak >= 2 && (
-              <span className="badge bg-amber-50 text-amber-700">
-                <Flame className="h-3.5 w-3.5" /> {session.streak} streak
+              <span className="badge bg-marigold-100 text-marigold-700">
+                <Flame className="h-3.5 w-3.5" /> {session.streak} in a row
               </span>
             )}
-            <span className="badge bg-slate-100 text-slate-700">
+            <span className="badge bg-paper-sunk font-mono font-medium text-ink-700">
               {session.correct}/{session.answered} this session
             </span>
             {attempted > 0 && (
@@ -202,18 +205,18 @@ const QuizPage = () => {
                 title="Reset progress"
                 aria-label="Reset progress"
               >
-                <RotateCcw className="h-4 w-4" />
+                <Refresh className="h-4 w-4" />
               </button>
             )}
           </div>
         </div>
 
         <div className="mt-6">
-          <div className="flex items-end justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+          <div className="flex items-end justify-between gap-4">
+            <h1 className="text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
               {subject.name}
             </h1>
-            <span className="text-sm font-semibold text-slate-500">
+            <span className="shrink-0 font-mono text-xs text-ink-500">
               {Math.min(attempted, total)} of {total} answered
             </span>
           </div>
@@ -223,17 +226,17 @@ const QuizPage = () => {
         {/* Body */}
         {phase === "loading" ? (
           <div className="card mt-8 flex items-center justify-center py-24">
-            <Spinner className="h-7 w-7 text-brand-600" />
+            <Spinner className="h-7 w-7 text-ink" />
           </div>
         ) : phase === "done" ? (
           <div className="card mt-8 animate-fade-up px-6 py-14 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-orange-500/25">
-              <Trophy className="h-8 w-8" />
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-marigold-100 text-marigold-700">
+              <Trophy className="h-7 w-7" />
             </div>
-            <h2 className="mt-6 text-2xl font-extrabold text-slate-900">
-              {total === 0 ? "No questions yet" : "Subject complete!"}
+            <h2 className="mt-6 text-2xl font-bold text-ink">
+              {total === 0 ? "No questions yet" : "Subject complete"}
             </h2>
-            <p className="mx-auto mt-2 max-w-md text-slate-500">
+            <p className="mx-auto mt-2 max-w-md text-ink-500">
               {total === 0
                 ? "There aren't any questions in this subject yet. Check back soon."
                 : session.answered > 0
@@ -243,7 +246,7 @@ const QuizPage = () => {
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               {total > 0 && (
                 <button className="btn-primary" onClick={() => setConfirmReset(true)}>
-                  <RotateCcw className="h-4 w-4" /> Practise again
+                  <Refresh className="h-4 w-4" /> Practise again
                 </button>
               )}
               <Link to={`/courses/${courseId}`} className="btn-secondary">
@@ -254,10 +257,10 @@ const QuizPage = () => {
         ) : (
           <div key={question._id} className="mt-8 animate-fade-up">
             <div className="card p-6 sm:p-8">
-              <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
+              <p className="eyebrow">
                 Question {Math.min(attempted + (phase === "answered" ? 0 : 1), total)}
               </p>
-              <h2 className="mt-3 text-lg font-bold leading-relaxed text-slate-900 sm:text-xl">
+              <h2 className="mt-3 font-sans text-lg font-semibold leading-relaxed text-ink sm:text-xl">
                 {question.question_text}
               </h2>
 
@@ -274,7 +277,7 @@ const QuizPage = () => {
                       aria-checked={selectedId === option._id}
                       onClick={() => choose(option)}
                       disabled={phase !== "question"}
-                      className={`group flex w-full items-center gap-4 rounded-xl border-2 p-3.5 text-left transition disabled:cursor-default ${optionStyle(
+                      className={`group flex w-full items-center gap-4 rounded-lg border p-3.5 text-left transition-colors disabled:cursor-default ${optionStyle(
                         phase,
                         option,
                         selectedId,
@@ -282,7 +285,7 @@ const QuizPage = () => {
                       )}`}
                     >
                       <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold transition ${letterStyle(
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[1.5px] font-mono text-sm font-medium transition-colors ${bubbleStyle(
                           phase,
                           option,
                           selectedId,
@@ -292,16 +295,14 @@ const QuizPage = () => {
                         {isRight ? (
                           <Check className="h-4 w-4" />
                         ) : isWrong ? (
-                          <X className="h-4 w-4" />
+                          <Close className="h-4 w-4" />
                         ) : (
                           LETTERS[i]
                         )}
                       </span>
-                      <span className="flex-1 font-medium text-slate-800">
-                        {option.option_text}
-                      </span>
+                      <span className="flex-1 font-medium text-ink">{option.option_text}</span>
                       {phase === "submitting" && selectedId === option._id && (
-                        <Spinner className="h-4 w-4 text-brand-600" />
+                        <Spinner className="h-4 w-4 text-ink" />
                       )}
                     </button>
                   );
@@ -312,58 +313,49 @@ const QuizPage = () => {
             {phase === "answered" && (
               <div className="mt-4 animate-fade-up">
                 <div
-                  className={`rounded-2xl border p-5 ${
+                  className={`rounded-xl border p-5 ${
                     result.isCorrect
-                      ? "border-emerald-200 bg-emerald-50"
-                      : "border-rose-200 bg-rose-50"
+                      ? "border-right-200 bg-right-50"
+                      : "border-wrong-200 bg-wrong-50"
                   }`}
                 >
                   <p
                     className={`flex items-center gap-2 font-bold ${
-                      result.isCorrect ? "text-emerald-800" : "text-rose-800"
+                      result.isCorrect ? "text-right-700" : "text-wrong-700"
                     }`}
                   >
                     {result.isCorrect ? (
                       <>
-                        <Check className="h-5 w-5" /> Correct!
+                        <Check className="h-5 w-5" /> Correct
                       </>
                     ) : (
                       <>
-                        <X className="h-5 w-5" /> Not quite
+                        <Close className="h-5 w-5" /> Not quite
                       </>
                     )}
                   </p>
                   {result.explanation && (
-                    <div className="mt-3 flex gap-3 rounded-xl bg-white/70 p-4 text-sm leading-relaxed text-slate-700">
-                      <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                    <div className="mt-3 flex gap-3 rounded-lg bg-paper-card/80 p-4 text-sm leading-relaxed text-ink-700">
+                      <Bulb className="mt-0.5 h-4 w-4 shrink-0 text-marigold-700" />
                       <p>{result.explanation}</p>
                     </div>
                   )}
                 </div>
                 <div className="mt-5 flex items-center justify-between gap-4">
-                  <p className="hidden text-xs text-slate-400 sm:block">
-                    Press <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-sans">Enter</kbd> to continue
+                  <p className="hidden text-xs text-ink-500 sm:block">
+                    Press {kbd("Enter")} to continue
                   </p>
                   <button className="btn-primary ml-auto px-6" onClick={loadNext} autoFocus>
-                    Next question <ArrowRight className="h-4 w-4" />
+                    Next question
                   </button>
                 </div>
               </div>
             )}
 
             {phase === "question" && (
-              <p className="mt-4 hidden text-center text-xs text-slate-400 sm:block">
-                Tip: press{" "}
-                <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-sans">A</kbd>
-                –
-                <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-sans">
-                  {LETTERS[question.options.length - 1]}
-                </kbd>{" "}
-                or <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-sans">1</kbd>–
-                <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 font-sans">
-                  {question.options.length}
-                </kbd>{" "}
-                to answer
+              <p className="mt-4 hidden text-center text-xs text-ink-500 sm:block">
+                Press {kbd("A")} to {kbd(LETTERS[question.options.length - 1])} or{" "}
+                {kbd("1")} to {kbd(question.options.length)} to answer
               </p>
             )}
           </div>

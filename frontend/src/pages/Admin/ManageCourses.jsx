@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Library, Pencil, Plus, Trash2 } from "lucide-react";
+import { Books, ChevronRight, Pencil, Plus, Trash } from "../../components/icons";
 import { api, errorMessage } from "../../api";
 import useFetch from "../../lib/useFetch";
-import { initials, paletteFor, plural } from "../../lib/palette";
+import { initials, plural } from "../../lib/format";
 import Spinner, { PageLoader } from "../../components/ui/Spinner";
 import { EmptyState, ErrorState } from "../../components/ui/States";
 import Modal from "../../components/ui/Modal";
@@ -86,7 +86,7 @@ const ManageCourses = () => {
         <ErrorState message={error} onRetry={reload} />
       ) : courses.length === 0 ? (
         <EmptyState
-          icon={Library}
+          icon={Books}
           title="No courses yet"
           message="Create a course such as “IOE Entrance” to start building your question bank."
           action={
@@ -96,38 +96,37 @@ const ManageCourses = () => {
           }
         />
       ) : (
-        <ul className="card divide-y divide-slate-100">
+        <ul className="card divide-y divide-line">
           {courses.map((course, i) => {
-            const p = paletteFor(i);
             return (
               <li key={course._id} className="flex items-center gap-2 pr-3">
                 <Link
                   to={`/admin/courses/${course._id}`}
                   className="group flex min-w-0 flex-1 items-center gap-4 px-5 py-4"
                 >
-                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-extrabold ${p.bg} ${p.text}`}>
+                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line-strong font-mono text-sm font-medium text-ink`}>
                     {initials(course.name)}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900 group-hover:text-brand-700">
+                    <p className="font-semibold text-ink group-hover:text-ink-700">
                       {course.name}
                     </p>
-                    <p className="truncate text-sm text-slate-500">{course.courseDescription}</p>
-                    <p className="mt-1 text-xs font-medium text-slate-400">
+                    <p className="truncate text-sm text-ink-500">{course.courseDescription}</p>
+                    <p className="mt-1 text-xs font-medium text-ink-400">
                       {plural(course.subjectCount, "subject")} · {plural(course.questionCount, "question")}
                     </p>
                   </div>
-                  <ChevronRight className="hidden h-4 w-4 text-slate-400 sm:block" />
+                  <ChevronRight className="hidden h-4 w-4 text-ink-400 sm:block" />
                 </Link>
                 <button className="icon-btn" onClick={() => openForm(course)} aria-label={`Edit ${course.name}`}>
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
-                  className="icon-btn hover:bg-rose-50 hover:text-rose-600"
+                  className="icon-btn hover:bg-wrong-50 hover:text-wrong-500"
                   onClick={() => setDeleting(course)}
                   aria-label={`Delete ${course.name}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </button>
               </li>
             );

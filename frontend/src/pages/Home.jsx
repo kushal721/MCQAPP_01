@@ -1,44 +1,39 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  Layers,
-  Lightbulb,
-  Sparkles,
-  Target,
-} from "lucide-react";
+import { Book, ChevronRight } from "../components/icons";
 import { api } from "../api";
 import useFetch from "../lib/useFetch";
-import { initials, paletteFor, plural } from "../lib/palette";
+import { initials, plural } from "../lib/format";
 import { ErrorState, EmptyState } from "../components/ui/States";
+import TryQuestion from "../components/TryQuestion";
 
 const steps = [
   {
-    icon: Layers,
-    title: "Pick a course",
-    text: "Choose the exam you're preparing for and drill into a subject.",
+    title: "Pick a course and a subject",
+    text: "Courses match the exam you're sitting. Subjects let you work on one weak area at a time.",
   },
   {
-    icon: Target,
-    title: "Answer questions",
-    text: "Get a fresh, random question each time — never one you've already done.",
+    title: "Answer questions you haven't seen",
+    text: "Each question is drawn at random from the ones you haven't answered in that subject yet.",
   },
   {
-    icon: Lightbulb,
-    title: "Learn instantly",
-    text: "See the correct answer and a clear explanation right after you pick.",
+    title: "Read why the answer is right",
+    text: "As soon as you choose, the correct option and its explanation appear.",
+  },
+  {
+    title: "Pick up where you left off",
+    text: "Progress is kept on this device. Reset a subject whenever you want to go through it again.",
   },
 ];
 
-const CourseSkeleton = () => (
-  <div className="card animate-pulse p-6">
-    <div className="h-12 w-12 rounded-xl bg-slate-100" />
-    <div className="mt-5 h-5 w-1/2 rounded bg-slate-100" />
-    <div className="mt-3 h-4 w-full rounded bg-slate-100" />
-    <div className="mt-2 h-4 w-2/3 rounded bg-slate-100" />
-  </div>
+const CourseRowSkeleton = () => (
+  <li className="flex animate-pulse items-center gap-4 px-5 py-5">
+    <div className="h-11 w-11 rounded-lg bg-paper-sunk" />
+    <div className="flex-1 space-y-2">
+      <div className="h-4 w-1/4 rounded bg-paper-sunk" />
+      <div className="h-3 w-2/3 rounded bg-paper-sunk" />
+    </div>
+  </li>
 );
 
 const Home = () => {
@@ -51,86 +46,54 @@ const Home = () => {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-950">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand-600/30 blur-3xl" />
-          <div className="absolute -bottom-40 right-0 h-[28rem] w-[28rem] rounded-full bg-violet-600/25 blur-3xl" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:48px_48px]" />
-        </div>
-
-        <div className="container-page relative py-20 text-center sm:py-28">
-          <span className="badge mx-auto border border-white/10 bg-white/5 px-3 py-1 text-brand-200">
-            <Sparkles className="h-3.5 w-3.5" /> Exam prep, made focused
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-            Master every subject,{" "}
-            <span className="bg-gradient-to-r from-brand-300 to-violet-300 bg-clip-text text-transparent">
-              one question at a time
-            </span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-slate-300 sm:text-lg">
-            Practise multiple-choice questions for entrance and competitive
-            exams, with instant feedback and explanations for every answer.
-          </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/#courses" className="btn-primary px-6 py-3 text-base">
-              Browse courses <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/#how-it-works"
-              className="btn px-6 py-3 text-base text-slate-200 hover:bg-white/10"
-            >
-              How it works
-            </Link>
+      {/* Hero with a working sample question */}
+      <section className="border-b border-line">
+        <div className="container-page grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+          <div>
+            <p className="eyebrow">IOE · IOM · Loksewa</p>
+            <h1 className="mt-4 max-w-xl text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+              Entrance exam practice that remembers what you've answered.
+            </h1>
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-ink-700 sm:text-lg">
+              Choose a subject and work through questions you haven't seen yet.
+              After every answer you get the correct option and a short
+              explanation.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Link to="/#courses" className="btn-primary px-5 py-3 text-base">
+                Browse courses
+              </Link>
+              {courses && courses.length > 0 && (
+                <p className="font-mono text-sm text-ink-500">
+                  {plural(courses.length, "course")} · {plural(totalQuestions, "question")}
+                </p>
+              )}
+            </div>
           </div>
 
-          {courses && courses.length > 0 && (
-            <dl className="mx-auto mt-14 grid max-w-lg grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
-              <div className="bg-slate-950/60 px-6 py-5">
-                <dt className="text-sm text-slate-400">Courses</dt>
-                <dd className="mt-1 text-3xl font-extrabold text-white">
-                  {courses.length}
-                </dd>
-              </div>
-              <div className="bg-slate-950/60 px-6 py-5">
-                <dt className="text-sm text-slate-400">Questions</dt>
-                <dd className="mt-1 text-3xl font-extrabold text-white">
-                  {totalQuestions}
-                </dd>
-              </div>
-            </dl>
-          )}
+          <TryQuestion />
         </div>
       </section>
 
       {/* Courses */}
       <section id="courses" className="scroll-mt-16 py-16 sm:py-20">
         <div className="container-page">
-          <div className="mb-10 max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-wider text-brand-600">
-              Courses
-            </p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
-              Choose what to practise
-            </h2>
-            <p className="mt-2 text-slate-500">
-              Each course is split into subjects so you can focus on your weak
-              spots.
-            </p>
+          <div className="mb-8 flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Courses</h2>
+            <p className="text-ink-500">Each course is split into subjects.</p>
           </div>
 
           {loading ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="card divide-y divide-line">
               {[0, 1, 2].map((i) => (
-                <CourseSkeleton key={i} />
+                <CourseRowSkeleton key={i} />
               ))}
-            </div>
+            </ul>
           ) : error ? (
             <ErrorState message={error} onRetry={reload} />
           ) : courses.length === 0 ? (
             <EmptyState
-              icon={BookOpen}
+              icon={Book}
               title="No courses yet"
               message="Courses added from the admin panel will show up here."
               action={
@@ -140,80 +103,61 @@ const Home = () => {
               }
             />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course, i) => {
-                const p = paletteFor(i);
-                return (
+            <ul className="card divide-y divide-line overflow-hidden">
+              {courses.map((course) => (
+                <li key={course._id}>
                   <Link
-                    key={course._id}
                     to={`/courses/${course._id}`}
-                    className={`card group flex animate-fade-up flex-col p-6 ring-4 ring-transparent transition hover:-translate-y-0.5 hover:shadow-lg ${p.ring}`}
-                    style={{ animationDelay: `${i * 60}ms` }}
+                    className="group grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-1 px-5 py-5 transition-colors hover:bg-paper sm:grid-cols-[auto_1fr_auto_auto] sm:gap-x-6"
                   >
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl text-base font-extrabold ${p.bg} ${p.text}`}
-                    >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-line-strong font-mono text-sm font-medium text-ink">
                       {initials(course.name)}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-ink">{course.name}</h3>
+                      <p className="line-clamp-1 text-sm text-ink-500">
+                        {course.courseDescription}
+                      </p>
                     </div>
-                    <h3 className="mt-5 text-lg font-bold text-slate-900">
-                      {course.name}
-                    </h3>
-                    <p className="mt-1.5 line-clamp-2 flex-1 text-sm leading-relaxed text-slate-500">
-                      {course.courseDescription}
+                    <p className="col-start-2 font-mono text-xs text-ink-500 sm:col-start-auto">
+                      {plural(course.subjectCount || 0, "subject")} ·{" "}
+                      {plural(course.questionCount || 0, "question")}
                     </p>
-                    <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-                      <span className="text-slate-500">
-                        {plural(course.subjectCount || 0, "subject")} ·{" "}
-                        {plural(course.questionCount || 0, "question")}
-                      </span>
-                      <ArrowRight
-                        className={`h-4 w-4 transition group-hover:translate-x-1 ${p.text}`}
-                      />
-                    </div>
+                    <ChevronRight className="col-start-3 row-span-2 row-start-1 h-5 w-5 text-ink-400 transition-colors group-hover:text-ink sm:col-start-auto sm:row-span-1" />
                   </Link>
-                );
-              })}
-            </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="scroll-mt-16 border-t border-slate-200 bg-white py-16 sm:py-20">
-        <div className="container-page">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <p className="text-sm font-bold uppercase tracking-wider text-brand-600">
-              How it works
-            </p>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
-              Built for focused practice
+      <section id="how-it-works" className="scroll-mt-16 border-t border-line bg-paper-sunk/50 py-16 sm:py-20">
+        <div className="container-page grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-16">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              How practice works
             </h2>
+            <p className="mt-3 max-w-sm text-ink-500">
+              No sign-up. Keyboard users can answer with{" "}
+              <span className="kbd">A</span> to <span className="kbd">F</span> and move on with{" "}
+              <span className="kbd">Enter</span>.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {steps.map(({ icon: Icon, title, text }, i) => (
-              <div key={title} className="relative rounded-2xl bg-slate-50 p-6">
-                <span className="absolute right-6 top-6 text-5xl font-extrabold text-slate-200/70">
-                  {i + 1}
+          <ol className="divide-y divide-line border-y border-line">
+            {steps.map(({ title, text }, i) => (
+              <li key={title} className="grid grid-cols-[3rem_1fr] gap-2 py-5">
+                <span className="font-mono text-sm text-marigold-700">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-brand-600 shadow-sm">
-                  <Icon className="h-5 w-5" />
+                <div>
+                  <h3 className="font-sans text-base font-semibold text-ink">{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-500">{text}</p>
                 </div>
-                <h3 className="mt-5 font-bold text-slate-900">{title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{text}</p>
-              </div>
-            ))}
-          </div>
-          <ul className="mx-auto mt-12 flex max-w-3xl flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-slate-600">
-            {[
-              "Progress saved automatically",
-              "Keyboard shortcuts",
-              "Works on mobile",
-            ].map((f) => (
-              <li key={f} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {f}
               </li>
             ))}
-          </ul>
+          </ol>
         </div>
       </section>
     </>

@@ -11,7 +11,7 @@
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-5fa04e?logo=nodedotjs&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose_8-47a248?logo=mongodb&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-1E1C18.svg)](LICENSE)
 
 <img src="docs/screenshots/home.jpg" alt="MCQPrep home page" width="900" />
 
@@ -40,14 +40,20 @@
 - **Progress tracking**: progress bars per subject, plus answered count and accuracy for each course.
 - **Session stats**: score for the current session and a streak counter.
 - **Practise again**: reset a subject to start it over.
-- **Keyboard shortcuts**: press `A`–`F` or `1`–`6` to answer and `Enter` / `→` for the next question.
+- **Keyboard shortcuts**: press `A` to `F` or `1` to `6` to answer, and `Enter` or the right arrow key for the next question.
 
 ### For admins (`/admin`)
 - **Login required**: email and password sign-in, with sessions that expire and access checked on every request.
 - **Dashboard** with totals for courses, subjects, questions and answers given.
 - **Courses and subjects**: create, edit and delete. Deleting one also deletes everything under it.
 - **Question bank**: browse and search the questions in a subject, with the correct answers highlighted.
-- **Question editor** with 2–6 options, one-click correct-answer marking, an optional explanation, and **Save & add another** for entering questions in bulk.
+- **Question editor** with 2 to 6 options, one-click correct-answer marking, an optional explanation, and **Save & add another** for entering questions in bulk.
+
+### Design
+- Warm paper and ink palette with one accent colour (marigold). Green and red appear only for right and wrong answers.
+- Type: Bricolage Grotesque for headings, Instrument Sans for text, JetBrains Mono for figures and labels.
+- Answer options are drawn as OMR-style bubbles. Icons are original SVGs in the Notion style (`frontend/src/components/icons.jsx`).
+- The home page has a working sample question that runs in the browser, so visitors can try the flow without creating attempts.
 
 ### Under the hood
 - The client never receives answers before the student commits. The server checks the chosen option and only then reveals the correct one and the explanation.
@@ -68,7 +74,7 @@
 
 | Layer    | Technology |
 | -------- | ---------- |
-| Frontend | React 18, Vite 5, React Router 6, Tailwind CSS 3, Axios, lucide-react |
+| Frontend | React 18, Vite 5, React Router 6, Tailwind CSS 3, Axios, an in-house SVG icon set |
 | Backend  | Node.js, Express 4, Mongoose 8, JWT auth (jsonwebtoken), bcryptjs |
 | Database | MongoDB (local or Atlas) |
 
@@ -241,7 +247,7 @@ MCQAPP_01/
 
 ## API reference
 
-All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in an `Authorization: Bearer <token>` header and return `401` without one.
+All routes are prefixed with `/api`. Routes marked (admin) need an admin token in an `Authorization: Bearer <token>` header and return `401` without one.
 
 <details>
 <summary><strong>Auth</strong></summary>
@@ -249,7 +255,7 @@ All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in a
 | Method | Route | Description |
 | ------ | ----- | ----------- |
 | POST | `/auth/login` | `{ email, password }` → `{ token, admin }`. Returns 401 on bad credentials and 429 after 10 failures in 15 minutes. |
-| GET | `/auth/me` 🔒 | The signed-in admin |
+| GET | `/auth/me` (admin) | The signed-in admin |
 
 </details>
 
@@ -260,9 +266,9 @@ All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in a
 | ------ | ----- | ----------- |
 | GET | `/course/getAllCourse` | List courses with `subjectCount` and `questionCount` |
 | GET | `/course/getCourse/:id` | Get one course |
-| POST | `/course/addCourse` 🔒 | Create `{ name, courseDescription }` |
-| PUT | `/course/updateCourse/:id` 🔒 | Update name and/or description |
-| DELETE | `/course/deleteCourse/:id` 🔒 | Delete a course with its subjects, questions and attempts |
+| POST | `/course/addCourse` (admin) | Create `{ name, courseDescription }` |
+| PUT | `/course/updateCourse/:id` (admin) | Update name and/or description |
+| DELETE | `/course/deleteCourse/:id` (admin) | Delete a course with its subjects, questions and attempts |
 
 </details>
 
@@ -273,9 +279,9 @@ All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in a
 | ------ | ----- | ----------- |
 | GET | `/subject/getSubjectByCourse/:courseId` | List a course's subjects with `questionCount` |
 | GET | `/subject/getSubject/:id` | Get one subject (course populated) |
-| POST | `/subject/addSubject` 🔒 | Create `{ name, courseId }` |
-| PUT | `/subject/updateSubject/:id` 🔒 | Rename `{ name }` |
-| DELETE | `/subject/deleteSubject/:id` 🔒 | Delete a subject with its questions and attempts |
+| POST | `/subject/addSubject` (admin) | Create `{ name, courseId }` |
+| PUT | `/subject/updateSubject/:id` (admin) | Rename `{ name }` |
+| DELETE | `/subject/deleteSubject/:id` (admin) | Delete a subject with its questions and attempts |
 
 </details>
 
@@ -284,11 +290,11 @@ All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in a
 
 | Method | Route | Description |
 | ------ | ----- | ----------- |
-| GET | `/question/getQuestionsBySubject/:subject_id` 🔒 | All questions in a subject, with answers |
-| GET | `/question/getQuestion/:id` 🔒 | One question, with answers |
-| POST | `/question/addQuestion` 🔒 | Create `{ subject_id, question_text, options: [{ option_text, is_correct }], explanation? }` |
-| PUT | `/question/updateQuestion/:id` 🔒 | Update any of the fields above |
-| DELETE | `/question/deleteQuestion/:id` 🔒 | Delete a question |
+| GET | `/question/getQuestionsBySubject/:subject_id` (admin) | All questions in a subject, with answers |
+| GET | `/question/getQuestion/:id` (admin) | One question, with answers |
+| POST | `/question/addQuestion` (admin) | Create `{ subject_id, question_text, options: [{ option_text, is_correct }], explanation? }` |
+| PUT | `/question/updateQuestion/:id` (admin) | Update any of the fields above |
+| DELETE | `/question/deleteQuestion/:id` (admin) | Delete a question |
 | GET | `/question/getQuestionBySubject/:subject_id?userId=` | A random unanswered question, **without** the answer. Returns 404 when the subject is finished. |
 | POST | `/question/attemptedQuestion` | Submit `{ userId, courseId, subjectId, questionId, selectedOptionId }`. Returns `{ isCorrect, correctOptionIds, explanation }`. |
 | GET | `/question/progress/:courseId?userId=` | `{ [subjectId]: { attempted, correct } }` |
@@ -301,7 +307,7 @@ All routes are prefixed with `/api`. Routes marked 🔒 need an admin token in a
 
 | Method | Route | Description |
 | ------ | ----- | ----------- |
-| GET | `/stats` 🔒 | Totals for the dashboard |
+| GET | `/stats` (admin) | Totals for the dashboard |
 | GET | `/health` | Health check |
 
 </details>

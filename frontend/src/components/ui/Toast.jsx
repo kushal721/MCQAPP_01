@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { CheckCircle2, XCircle, X } from "lucide-react";
+import { CheckCircle, Close, CrossCircle } from "../icons";
 
 const ToastContext = createContext(() => {});
 
@@ -35,20 +35,20 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto flex w-full max-w-sm animate-fade-up items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-lg"
+            className="pointer-events-auto flex w-full max-w-sm animate-fade-up items-start gap-3 rounded-lg border border-line bg-paper-card p-3.5 shadow-lg shadow-ink/10"
           >
             {t.type === "error" ? (
-              <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-500" />
+              <CrossCircle className="mt-0.5 h-5 w-5 shrink-0 text-wrong-500" />
             ) : (
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+              <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-right-500" />
             )}
-            <p className="flex-1 text-sm font-medium text-slate-700">{t.message}</p>
+            <p className="flex-1 text-sm font-medium text-ink-700">{t.message}</p>
             <button
               onClick={() => dismiss(t.id)}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-ink-400 hover:text-ink"
               aria-label="Dismiss"
             >
-              <X className="h-4 w-4" />
+              <Close className="h-4 w-4" />
             </button>
           </div>
         ))}

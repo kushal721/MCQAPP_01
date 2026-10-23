@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Close, Plus } from "../../components/icons";
 import { api, errorMessage } from "../../api";
 import Spinner, { PageLoader } from "../../components/ui/Spinner";
 import { ErrorState } from "../../components/ui/States";
@@ -210,7 +210,7 @@ const QuestionForm = () => {
           <fieldset>
             <legend className="label">
               Options{" "}
-              <span className="font-normal text-slate-400">— click the circle to mark the correct one</span>
+              <span className="font-normal text-ink-400">(click the circle to mark the correct one)</span>
             </legend>
             <div className="space-y-2.5">
               {options.map((option, i) => {
@@ -219,7 +219,7 @@ const QuestionForm = () => {
                   <div
                     key={i}
                     className={`flex items-center gap-3 rounded-xl border-2 p-2 pl-3 transition ${
-                      correct ? "border-emerald-400 bg-emerald-50/60" : "border-slate-200 bg-white"
+                      correct ? "border-right-500 bg-right-50" : "border-line bg-paper-card"
                     }`}
                   >
                     <button
@@ -227,17 +227,17 @@ const QuestionForm = () => {
                       onClick={() => setCorrectIndex(i)}
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition ${
                         correct
-                          ? "border-emerald-500 bg-emerald-500 text-white"
-                          : "border-slate-300 text-transparent hover:border-emerald-400"
+                          ? "border-right-500 bg-right-500 text-white"
+                          : "border-line-strong text-transparent hover:border-right-500"
                       }`}
                       aria-label={`Mark option ${LETTERS[i]} as correct`}
                       aria-pressed={correct}
                     >
                       <Check className="h-4 w-4" />
                     </button>
-                    <span className="w-4 text-sm font-bold text-slate-400">{LETTERS[i]}</span>
+                    <span className="w-4 text-sm font-bold text-ink-400">{LETTERS[i]}</span>
                     <input
-                      className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+                      className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-ink placeholder-ink-400 focus:outline-none"
                       value={option.option_text}
                       onChange={(e) => updateOption(i, e.target.value)}
                       placeholder={`Option ${LETTERS[i]}`}
@@ -251,7 +251,7 @@ const QuestionForm = () => {
                         className="icon-btn h-8 w-8"
                         aria-label={`Remove option ${LETTERS[i]}`}
                       >
-                        <X className="h-4 w-4" />
+                        <Close className="h-4 w-4" />
                       </button>
                     )}
                   </div>
@@ -271,7 +271,7 @@ const QuestionForm = () => {
 
           <div>
             <label htmlFor="explanation" className="label">
-              Explanation <span className="font-normal text-slate-400">(optional)</span>
+              Explanation <span className="font-normal text-ink-400">(optional)</span>
             </label>
             <textarea
               id="explanation"
@@ -284,7 +284,7 @@ const QuestionForm = () => {
         </section>
 
         {formError && (
-          <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <p className="rounded-xl border border-wrong-200 bg-wrong-50 px-4 py-3 text-sm font-medium text-wrong-700">
             {formError}
           </p>
         )}
